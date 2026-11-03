@@ -13,15 +13,18 @@ settings = get_settings()
 def get_openai_client() -> OpenAI:
     if not settings.OPENAI_API_KEY:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. Add Groq key to .env file."
+            "OPENAI_API_KEY is not set. Add your API key to backend/.env"
         )
 
-    logger.info("Initializing Groq client.")
-    client = OpenAI(
-        api_key=settings.OPENAI_API_KEY,
-        base_url="https://api.groq.com/openai/v1",  # ← only change
-    )
-    logger.info(f"Groq client ready. Model: {settings.LLM_MODEL}")
+    client_kwargs = {"api_key": settings.OPENAI_API_KEY}
+    if settings.OPENAI_BASE_URL:
+        client_kwargs["base_url"] = settings.OPENAI_BASE_URL
+        logger.info(f"Initializing custom LLM client: {settings.OPENAI_BASE_URL}")
+    else:
+        logger.info("Initializing official OpenAI client.")
+
+    client = OpenAI(**client_kwargs)
+    logger.info(f"LLM client ready. Model: {settings.LLM_MODEL}")
     return client
 
 
